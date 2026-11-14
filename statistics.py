@@ -1,16 +1,11 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-
+from numpy.typing import NDArray
 
 class SourceAnalyzer:
-    def __init__(self, file_path: str):
-        self.file_path = Path(file_path)
-        self.data = np.frombuffer(
-            self.file_path.read_bytes(),
-            dtype=np.uint8
-        )
+    def __init__(self, data: NDArray[np.uint8]):
+        self.data = data
 
         if self.data.size == 0:
             raise ValueError("The file is empty")
@@ -22,6 +17,12 @@ class SourceAnalyzer:
 
         self._analyze()
 
+    def get_data(self):
+        return self.data
+
+    def get_symbol_probabilities(self):
+        return self.symbol_probabilities
+
     @staticmethod
     def _entropy(probabilities):
         p = probabilities[probabilities > 0]
@@ -29,18 +30,11 @@ class SourceAnalyzer:
 
     def _analyze(self):
         # Individual symbol frequencies
-        self.symbol_counts = np.bincount(
-            self.data, minlength=256
-        )
+        self.symbol_counts = np.bincount(self.data, minlength=256)
 
-        self.symbol_probabilities = (
-            self.symbol_counts / self.data.size
-        )
-
+        self.symbol_probabilities =  self.symbol_counts / self.data.size
         # Consecutive overlapping symbol pairs
-        self.pair_counts = np.zeros(
-            (256, 256), dtype=np.int64
-        )
+        self.pair_counts = np.zeros((256, 256), dtype=np.int64)
 
         if self.data.size >= 2:
             np.add.at(
@@ -71,10 +65,7 @@ class SourceAnalyzer:
         # symbol in each observed pair
         p_first = self.pair_probabilities.sum(axis=1)
 
-        return (
-            self.entropy_pair()
-            - self._entropy(p_first)
-        )
+        return self.entropy_pair() - self._entropy(p_first)
 
     def plot_symbols(self):
         plt.figure(figsize=(12, 4))
@@ -110,27 +101,13 @@ class SourceAnalyzer:
         plt.show()
 
     def print_results(self):
-        print(f"File: {self.file_path}")
         print(f"Size: {self.data.size} bytes")
-        print(
-            "Distinct symbols:",
-            np.count_nonzero(self.symbol_counts)
-        )
-        print(
-            f"H(X): {self.entropy_symbol():.4f} bits/symbol"
-        )
+        print("Distinct symbols:", np.count_nonzero(self.symbol_counts))
+        print(f"H(X): {self.entropy_symbol():.4f} bits/symbol")
 
         if self.data.size >= 2:
-            print(
-                f"H(X,Y): {self.entropy_pair():.4f} bits/pair"
-            )
-            print(
-                f"H(X,Y)/2: "
-                f"{self.entropy_pair() / 2:.4f} bits/symbol"
-            )
-            print(
-                f"H(Y|X): "
-                f"{self.entropy_conditional():.4f} bits/symbol"
-            )
+            print(f"H(X,Y): {self.entropy_pair():.4f} bits/pair")
+            print(f"H(X,Y)/2: "f"{self.entropy_pair() / 2:.4f} bits/symbol")
+            print(f"H(Y|X): "f"{self.entropy_conditional():.4f} bits/symbol")
         else:
             print("Not enough data for pair analysis")
