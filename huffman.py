@@ -391,52 +391,10 @@ class HuffmanTree:
 
         return np.frombuffer(bytes(output), dtype=np.uint8)
 
-    # Visualize the Huffman tree
-    def visualize_tree(self, filename="huffman_tree", view=True):
-        from graphviz import Digraph
-
-        if self.root is None:
-            return
-
-        dot = Digraph("Huffman Tree")
-        dot.attr(rankdir="TB")
-
-        def add_node(node):
-            node_id = str(id(node))
-
-            if node.is_leaf():
-                dot.node(
-                    node_id,
-                    f"Symbol: {node.symbol}\nP: {node.probability:.4f}",
-                    shape="box",
-                    style="filled",
-                    fillcolor="lightgreen"
-                )
-            else:
-                dot.node(
-                    node_id,
-                    f"P: {node.probability:.4f}",
-                    shape="circle"
-                )
-
-            if node.left is not None:
-                add_node(node.left)
-                dot.edge(node_id, str(id(node.left)), label="0")
-
-            if node.right is not None:
-                add_node(node.right)
-                dot.edge(node_id, str(id(node.right)), label="1")
-
-        add_node(self.root)
-
-        dot.render(filename, format="svg", cleanup=True, view=view)
-
-
 # External compression interface
 def compress(data_to_compress: NDArray[np.uint8]) -> NDArray[np.uint8]:
     tree = HuffmanTree()
     return tree.compress(data_to_compress)
-
 
 # External decompression interface
 def decompress(data_to_uncompress: NDArray[np.uint8]) -> NDArray[np.uint8]:
