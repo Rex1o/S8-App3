@@ -16,11 +16,11 @@ def compress(data_to_compress : NDArray[np.uint8]) -> NDArray[np.uint8]:
         if current == previous and count < 255:
             count += 1
         else:
-            result.extend([count, previous])
+            result.extend([previous, count])
             previous = current
             count = 1
 
-    result.extend([count, previous])
+    result.extend([previous, count])
 
     return np.array(result, dtype=np.uint8)
 
@@ -31,8 +31,8 @@ def decompress(data: NDArray[np.uint8]) -> NDArray[np.uint8]:
     result = list()
 
     for i in range(0, len(data), 2):
-        count = data[i]
-        value = data[i + 1]
+        value = data[i]
+        count = data[i + 1]
         result.extend([value] * count)
 
     return np.array(result, dtype=np.uint8)

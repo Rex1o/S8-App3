@@ -1,29 +1,18 @@
-# Comparaison des algorithmes de compression
+# Compression d'images — APP3
 
-Outil en ligne de commande permettant de comparer les algorithmes de compression RCL, LZ77, Huffman et Arithmétique sur différents fichiers et images.
+Programme Python permettant de compresser et décompresser des fichiers à l'aide des algorithmes **RCL, LZ77, Huffman et arithmétique**.
 
-## Utilisation
+## Prérequis
 
-```bash
-python main.py <chemin> -a <algorithme> [options]
-```
-
-## Options disponibles
-
-| Option | Description |
-|---|---|
-| `chemin` | Chemin vers un fichier ou un dossier à analyser. |
-| `-a`, `--algorithm` | Algorithme à utiliser : `RCL`, `LZ77`, `HUFFMAN`, `ARITHMETIC` ou `ALL`. |
-| `-o` | Dossier de destination des résultats CSV. |
-| `--recursive` | Inclure les fichiers des sous-dossiers. |
-
-## Exemples
-
-**Exécuter tous les algorithmes sur un fichier :**
+Installer les dépendances :
 
 ```bash
-python main.py image.png -a ALL
+pip install numpy matplotlib pillow sortedcontainers graphviz
 ```
+
+## 1. `main.py` — Analyse et comparaison des algorithmes
+
+Permet de compresser un fichier ou un dossier complet, de comparer les performances des algorithmes et de générer des statistiques au format CSV.
 
 **Exécuter tous les algorithmes sur un dossier :**
 
@@ -34,40 +23,57 @@ python main.py ./images -a ALL
 **Exécuter un algorithme spécifique :**
 
 ```bash
-python main.py ./images -a HUFFMAN
+python main.py image.png -a HUFFMAN
 ```
 
-**Inclure les sous-dossiers :**
+**Inclure les sous-dossiers et choisir le dossier de sortie :**
 
 ```bash
-python main.py ./images -a ALL --recursive
+python main.py ./images -a ALL --recursive -o ./resultats
 ```
 
-**Spécifier le dossier de sortie :**
+Options disponibles :
 
-```bash
-python main.py ./images -a ALL -o ./results
-```
-
-## Fichiers CSV générés
-
-| Fichier | Description |
+| Option | Description |
 |---|---|
-| `compression_results.csv` | Résultats détaillés pour chaque fichier et algorithme : tailles, taux de compression, temps d'exécution et entropies. |
-| `comparison_by_file.csv` | Comparaison des taux de compression de chaque algorithme pour chaque fichier. |
-| `comparison_by_algorithm.csv` | Statistiques globales permettant de comparer les performances des algorithmes. |
+| `chemin` | Fichier ou dossier à analyser |
+| `-a`, `--algorithm` | `RCL`, `LZ77`, `HUFFMAN`, `ARITHMETIC`, `ALL` |
+| `-o` | Dossier de sortie des résultats |
+| `--recursive` | Inclure les sous-dossiers |
 
-## Informations supplémentaires
+Les CSV générés contiennent les tailles, les taux de compression, les entropies, les débits en bits/symbole (en-têtes inclus) et les temps d'exécution.
 
-- Les images sont converties en niveaux de gris sur 8 bits avant la compression.
-- Les tailles compressées incluent les en-têtes nécessaires à la décompression.
-- Les données décompressées sont comparées aux données originales afin de vérifier que la compression est sans perte.
-- Un taux de compression (%) plus faible indique une meilleure compression.
+## 2. `main_images.py` — Compression de quatre images
 
-Le taux de compression est calculé selon la formule :
+Permet de regrouper quatre images compressées dans un seul fichier, puis de les reconstruire.
 
-\[
-T = \frac{\text{Taille compressée}}{\text{Taille originale}}\times 100
-\]
+**Compresser quatre images :**
 
-Par exemple, un taux de 40 % signifie que les données compressées occupent 40 % de leur taille originale, soit une réduction de 60 %.
+```bash
+python main_images.py compresser image1.png image2.png image3.png image4.png -o images.comp -a AUTO
+```
+
+**Décompresser les quatre images :**
+
+```bash
+python main_images.py decompresser images.comp -o ./images_reconstruites -q 4
+```
+
+Options disponibles :
+
+| Option | Description |
+|---|---|
+| `compresser` | Compresser quatre images dans un fichier |
+| `decompresser` | Reconstruire les images depuis un fichier compressé |
+| `-a` | `AUTO`, `RCL`, `LZ77`, `HUFFMAN`, `ARITHMETIC` |
+| `-o` | Fichier de sortie (compression) ou dossier de sortie (décompression) |
+| `-q` | Nombre d'images à reconstruire (1 à 4) |
+
+Avec `AUTO`, le programme sélectionne automatiquement l'algorithme produisant le plus petit résultat pour chaque image.
+
+## Remarques
+
+- Les images sont converties en niveaux de gris sur 8 bits.
+- Les fichiers compressés conservent leurs en-têtes nécessaires à la décompression.
+- La compression est sans perte : les pixels reconstruits sont identiques aux pixels originaux après conversion en niveaux de gris.
+- Un taux de compression plus faible indique une meilleure compression.
